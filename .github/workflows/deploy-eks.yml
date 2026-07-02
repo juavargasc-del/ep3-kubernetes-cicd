@@ -1,4 +1,4 @@
-name: Deploy to EKS
+name: CI/CD Build and Push
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,28 +20,10 @@ jobs:
         run: |
           docker build -t tienda-backend:latest .
 
-      - name: Configurar credenciales AWS
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Login en Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Publicar imagen en Amazon ECR
+      - name: Verificar imagen construida
         run: |
-          echo "Push de imagen a ECR"
+          docker images
 
-      - name: Configurar kubectl
+      - name: Simulación de Push
         run: |
-          aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }}
-
-      - name: Desplegar aplicación
-        run: |
-          kubectl apply -f deployment.yaml
-          kubectl apply -f service.yaml
-          kubectl apply -f hpa.yaml
+          echo "En el laboratorio el push se realiza al registro local (localhost:5000) desde el servidor k3s."
